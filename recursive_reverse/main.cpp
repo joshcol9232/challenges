@@ -3,9 +3,9 @@
 #include <utility>
 
 void reverse(std::string::iterator begin, std::string::iterator end) {
-  --end;
-  if (end - begin <= 0) return;
+  if (end - begin <= 1) return;
 
+  --end;
   std::swap(*begin, *end);
   return reverse(++begin, end);
 }
