@@ -11,7 +11,7 @@ void reverse(std::string::iterator begin, std::string::iterator end) {
 }
 
 void reverse_iterative(std::string::iterator begin, std::string::iterator end) {
-  for (auto it = begin; end - it > 0; ++it) {
+  for (auto it = begin; end - it > 1; ++it) {
     --end;
     std::swap(*it, *end);
   }
