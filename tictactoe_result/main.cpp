@@ -116,7 +116,6 @@ std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
   if (s == N) { // Winner!
     return "Player " + std::to_string(convert_to_state(topLeft) + 1) + " wins";
   }
-
   // Check rows
   for (size_t r = 0; r < N; ++r) {
     const auto firstInRow = board[r][0];
@@ -126,7 +125,6 @@ std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
         goto nextRow;  // weird but oh well
       }
     }
-
     if (c == N) {  // It will be! Quite strange code. Kept if statement so I can still tell what's going on.
       return "Player " + std::to_string(convert_to_state(firstInRow) + 1) + " wins"; 
     }
@@ -136,18 +134,16 @@ std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
   // Check columns
   for (size_t c = 0; c < N; ++c) {
     const auto firstInCol = board[0][c];
-
     size_t r;
     for (r = 0; r < N; ++r) {
       if (board[r][c] != firstInCol) {
         goto nextCol;
       }
     }
-    nextCol:;
-
     if (r == N) {
-     return "Player " + std::to_string(convert_to_state(firstInCol) + 1) + " wins"; 
+      return "Player " + std::to_string(convert_to_state(firstInCol) + 1) + " wins"; 
     }
+    nextCol:;
   }
 
   return "It's a tie.";
