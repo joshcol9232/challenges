@@ -92,6 +92,57 @@ std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
 }  // namespace firstAttempt
 
 
+namespace thirdAttempt {
+
+template<int N>
+std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
+  // CHAR Sum of each row, each column, each diag. E.g: If it matches N * 'X', then it's full of 'X'
+  std::array<size_t, N> rowScores;
+  rowScores.fill(0);
+  std::array<size_t, N> columnScores;
+  columnScores.fill(0);
+  std::array<size_t, 2> diagScores {0, 0};
+
+  // == Calculate scores
+  // Row / column scores.
+  for (size_t r = 0; r < N; ++r) {
+    for (size_t c = 0; c < N; ++c) {
+      rowScores[r] += static_cast<size_t>(board[r][c]);
+      columnScores[c] += static_cast<size_t>(board[r][c]);
+    }
+
+    // Diagonal scores
+    diagScores[0] += static_cast<size_t>(board[r][r]);
+    diagScores[1] += static_cast<size_t>(board[r][N - 1 - r]);
+  }
+
+  // Check scores!
+  for (size_t s = 0; s < N; ++s) {
+    size_t playerIdx = 0;
+    for (char player : {'X', 'O'}) {
+      if (rowScores[s] == N * static_cast<size_t>(player) ||
+          columnScores[s] == N * static_cast<size_t>(player)) {
+        return "Player " + std::to_string(playerIdx + 1) + " wins";
+      }
+
+      ++playerIdx;
+    }
+  }
+  for (auto& diagScore : diagScores) {
+    size_t playerIdx = 0;
+    for (char player : {'X', 'O'}) {
+      if (diagScore == N * player) {
+        return "Player " + std::to_string(playerIdx + 1) + " wins";
+      }
+    }
+  }
+
+  return "It's a Tie";
+}
+
+}  // namespace thirdAttempt
+
+
 namespace secondAttempt {
 
 template<int N>
@@ -224,6 +275,44 @@ int main(int argc, char* argv[]) {
   }};
   answer = secondAttempt::ticTacToe<largeBoard.size()>(largeBoard);
   std::cout << answer << std::endl;
+
+  // ===================== Third attempt ====================
+  std::cout << "===================== Third attempt ====================" << std::endl;
+  board = {{
+    {'X', 'O', 'O'},
+    {'O', 'X', 'O'},
+    {'O', '#', 'X'}
+  }};
+  answer = thirdAttempt::ticTacToe<board.size()>(board);
+  std::cout << answer << std::endl;
+
+  board = {{
+    {'X', 'O', 'O'},
+    {'O', 'X', 'O'},
+    {'X', '#', 'O'}
+  }};
+  answer = thirdAttempt::ticTacToe<board.size()>(board);
+  std::cout << answer << std::endl;
+
+  board = {{
+    {'X', 'X', 'O'},
+    {'O', 'X', 'O'},
+    {'X', 'O', '#'}
+  }};
+  answer = thirdAttempt::ticTacToe<board.size()>(board);
+  std::cout << answer << std::endl;
+
+  // ======
+  largeBoard = {{
+    {'X', 'O', 'O', 'O', 'O'},
+    {'O', 'X', 'O', 'X', 'X'},
+    {'O', '#', 'X', '#', 'X'},
+    {'O', 'X', 'O', 'X', '#'},
+    {'X', 'O', 'O', '#', 'X'}
+  }};
+  answer = thirdAttempt::ticTacToe<largeBoard.size()>(largeBoard);
+  std::cout << answer << std::endl;
+
 
   return 0;
 }
