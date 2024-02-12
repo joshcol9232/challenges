@@ -1,7 +1,13 @@
 #include <array>
 #include <cassert>
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
+#include <iterator>
+#include <random>
 #include <string>
+
+#include <chrono>
 
 enum State : char {
   ePlayer1,
@@ -18,10 +24,12 @@ State convert_to_state(char in) {
       return ePlayer2;
     case '#':
       return eEmpty;
+    default:
+      return eEmpty;
   }
 }
 
-template<int N>
+template<size_t N>
 void convert_to_state(const std::array<std::array<char, N>, N>& in,
                       std::array<std::array<State, N>, N>& out)
 {
@@ -34,7 +42,7 @@ void convert_to_state(const std::array<std::array<char, N>, N>& in,
 
 namespace firstAttempt {
 
-template<int N>
+template<size_t N>
 std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
   // Convert board from string to "State"
   std::array<std::array<State, N>, N> states;
@@ -94,7 +102,7 @@ std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
 
 namespace thirdAttempt {
 
-template<int N>
+template<size_t N>
 std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
   // CHAR Sum of each row, each column, each diag. E.g: If it matches N * 'X', then it's full of 'X'
   std::array<size_t, N> rowScores;
@@ -131,9 +139,10 @@ std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
   for (auto& diagScore : diagScores) {
     size_t playerIdx = 0;
     for (char player : {'X', 'O'}) {
-      if (diagScore == N * player) {
+      if (diagScore == N * static_cast<size_t>(player)) {
         return "Player " + std::to_string(playerIdx + 1) + " wins";
       }
+      ++playerIdx;
     }
   }
 
@@ -145,7 +154,7 @@ std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
 
 namespace secondAttempt {
 
-template<int N>
+template<size_t N>
 std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
   // Linear search until a state in a given direction no longer matches the
   // first element in that direction.
@@ -203,7 +212,56 @@ std::string ticTacToe(const std::array<std::array<char, N>, N> board) {
 
 }  // namespace secondAttempt
 
+
+// Benchmarking
+
+template<size_t N>
+void randomBoard(std::array<std::array<char, N>, N>& board) {
+  constexpr std::array<char, 2> players {'x', 'y'};
+
+  for (size_t r = 0; r < N; ++r) {
+    for (size_t c = 0; c < N; ++c) {
+      board[r][c] = players[std::rand() % players.size()];
+    }
+  }
+}
+
+template<size_t N>
+void benchmark(const size_t num) {
+  using namespace std::chrono;
+  using Board = std::array<std::array<char, N>, N>; 
+
+  std::vector<Board> boards(num);
+
+  // generate
+  for (size_t n = 0; n < num; ++n) {
+    randomBoard(boards[n]);
+  }
+
+  auto runBench = [&](auto functor) -> auto {
+    auto start = high_resolution_clock::now();
+    for (size_t n = 0; n < num; ++n) {
+      functor(boards[n]);
+    }
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<nanoseconds>(end - start) / num;
+    return duration;
+  };
+
+  auto first = runBench(firstAttempt::ticTacToe<N>);
+  std::cout << "FIRST : " << first.count() << " ns/op" << std::endl;
+
+  auto second = runBench(secondAttempt::ticTacToe<N>);
+  std::cout << "SECOND : " << second.count() << " ns/op" << std::endl;
+
+  auto third = runBench(thirdAttempt::ticTacToe<N>);
+  std::cout << "THIRD : " << third.count() << " ns/op" << std::endl;
+}
+
+
 int main(int argc, char* argv[]) {
+  std::srand(std::time(nullptr)); // use current time as seed for random generator
+
   std::array<std::array<char, 3>, 3> board = {{
     {'X', 'O', 'O'},
     {'O', 'X', 'O'},
@@ -313,6 +371,9 @@ int main(int argc, char* argv[]) {
   answer = thirdAttempt::ticTacToe<largeBoard.size()>(largeBoard);
   std::cout << answer << std::endl;
 
+
+  // =====================
+  benchmark<10>(1e4);
 
   return 0;
 }
